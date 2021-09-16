@@ -4,14 +4,57 @@
 #define PI 3.14159265358979323846;
 
 struct pizza {
-    char *name;
+    char name[255];
     float ppd;
     struct pizza* next;
 };
 
-//void sort(struct pizza *head) {
-//    int 
-//}
+struct pizza* swap(struct pizza *p1, struct pizza *p2) {
+    printf("swap");
+    struct pizza *temp = p2->next;
+    p2->next = p1;
+    p1->next = temp;
+    return p2;
+}
+
+struct pizza* sort(struct pizza *head) {
+    printf("starting");
+    struct pizza *h = head;
+
+    while (true) {
+        struct pizza *curr = h;
+        int count = 0;
+        while (curr != NULL) {
+            if (curr->ppd < curr->next->ppd) {
+                curr = swap(curr, curr->next);
+                if (curr == h) {
+                    h = curr;
+                }
+                
+                count++;
+            }
+            else if (curr->ppd == curr->next->ppd) {
+                if (strcmp(curr->name, curr->next->name) > 0) {
+                    curr = swap(curr, curr->next);
+                    if (curr == h) {
+                        h = curr;
+                    }
+                    count++;
+                }
+            }
+            else {
+                ;
+            }
+            curr = curr->next;
+        }
+        if (count == 0) {
+            break;
+        }
+    }
+
+    return h;
+    
+}
 
 float calc_ppd(float *d, float *cost) {
     if (*d == 0 || *cost == 0) {
@@ -22,10 +65,11 @@ float calc_ppd(float *d, float *cost) {
     return area / *cost;
 }
 
-struct pizza* add_pizza(char *name, float *ppd) {
+struct pizza* add_pizza(char *pName, float *ppd, struct pizza *head) {
     struct pizza *newPizza = (struct pizza*)malloc(sizeof(struct pizza));
-    newPizza->name = name;
+    strcpy(newPizza->name, pName);
     newPizza->ppd = *ppd;
+    newPizza-> next = head;
 }
 
 void printList(struct pizza *head) {
@@ -58,18 +102,11 @@ int main(int argc, char *argv[]) {
             printf("Was not able to open the file\n");
             return EXIT_SUCCESS;
         }
-        // int c = fgetc(file);
-        // if (c == EOF) {
-        //     printf("PIZZA FILE IS EMPTY\n");
-        //     return EXIT_SUCCESS;
-        // }
-        // ungetc(c, file);
 
+        struct pizza *head = NULL;
         char pName[255];
         float d;
         float cost;
-        struct pizza *head = NULL;
-        struct pizza *curr;
 
         while(true) {
             if (fscanf(file, "%s", pName) == EOF) {
@@ -77,48 +114,21 @@ int main(int argc, char *argv[]) {
                 return EXIT_SUCCESS;
             }
             else if (strcmp(pName, "DONE") == 0) {
-                printf("breaking\n");
                 break;
             }
             else {
                 if (fscanf(file, "%f", &d) == 1 && fscanf(file, "%f", &cost) == 1) {
                     float ppd = calc_ppd(&d, &cost);
-                    if (head == NULL) {
-                        head = (struct pizza*)malloc(sizeof(struct pizza));
-                        head->name = pName;
-                        head->ppd = ppd;
-                        curr = head;
-                        printf("CREATE HEAD: %s %f\n", head->name, head->ppd);
-                    }
-                    else {
-                        curr->next = add_pizza(pName, &ppd);
-                        curr = curr->next;
-                    }
-                    printf("%s %f\n", curr->name, curr->ppd);
+                    struct pizza *temp = add_pizza(pName, &ppd, head);
+                    head = temp;
                 }
             }
-            printf("HEAD: %s %f\n", head->name, head->ppd);
-            printf("CURR: %s %f\n", curr->name, curr->ppd);
         }
 
-        // while (fscanf(file, "%s", name) == 1 && fscanf(file, "%f", &d) == 1 && 
-        // fscanf(file, "%f", &cost) == 1) {
-        //     float ppd = calc_ppd(&d, &cost);
-        //     if (head == NULL) {
-        //         head = (struct pizza*)malloc(sizeof(struct pizza));
-        //         head->name = name;
-        //         head->ppd = ppd;
-        //         curr = head;
-        //         printf("null");
-        //     }
-        //     else {
-        //         curr->next = add_pizza(name, &ppd);
-        //         curr = curr->next;
-        //     }
-        //     printf("%s %f\n", curr->name, curr->ppd);
-        // }
-        printf("HEAD: %s %f\n", head->name, head->ppd);
-
+        printf("UNSORTED: \n");
+        printList(head);
+        //head = sort(head);
+        printf("SORTED: \n");
         printList(head);
         freePizzas(head);
         fclose(file);
