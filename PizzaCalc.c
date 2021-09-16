@@ -4,57 +4,10 @@
 #define PI 3.14159265358979323846;
 
 struct pizza {
-    char name[255];
+    char name[65];
     float ppd;
     struct pizza* next;
 };
-
-struct pizza* swap(struct pizza *p1, struct pizza *p2) {
-    printf("swap");
-    struct pizza *temp = p2->next;
-    p2->next = p1;
-    p1->next = temp;
-    return p2;
-}
-
-struct pizza* sort(struct pizza *head) {
-    printf("starting");
-    struct pizza *h = head;
-
-    while (true) {
-        struct pizza *curr = h;
-        int count = 0;
-        while (curr != NULL) {
-            if (curr->ppd < curr->next->ppd) {
-                curr = swap(curr, curr->next);
-                if (curr == h) {
-                    h = curr;
-                }
-                
-                count++;
-            }
-            else if (curr->ppd == curr->next->ppd) {
-                if (strcmp(curr->name, curr->next->name) > 0) {
-                    curr = swap(curr, curr->next);
-                    if (curr == h) {
-                        h = curr;
-                    }
-                    count++;
-                }
-            }
-            else {
-                ;
-            }
-            curr = curr->next;
-        }
-        if (count == 0) {
-            break;
-        }
-    }
-
-    return h;
-    
-}
 
 float calc_ppd(float *d, float *cost) {
     if (*d == 0 || *cost == 0) {
@@ -77,6 +30,44 @@ void printList(struct pizza *head) {
     while (curr != NULL) {
         printf("%s %f\n", curr->name, curr->ppd);
         curr = curr->next;
+    }
+}
+
+void swap(struct pizza *p1, struct pizza *p2) {
+    char tempName[65]; 
+    strcpy(tempName, p1->name);
+    float tempPpd = p1->ppd;
+    strcpy(p1->name, p2->name);
+    p1->ppd = p2->ppd;
+    strcpy(p2->name, tempName);
+    p2->ppd = tempPpd;
+}
+
+void sort(struct pizza *head) {
+
+    while (true) {
+        struct pizza *curr = head;
+        int count = 0;
+        while (curr->next != NULL) {
+            if (curr->ppd < curr->next->ppd) {
+                swap(curr, curr->next);
+                
+                count++;
+            }
+            else if (curr->ppd == curr->next->ppd) {
+                if (strcmp(curr->name, curr->next->name) > 0) {
+                    swap(curr, curr->next);
+                    count++;
+                }
+            }
+            else {
+                ;
+            }
+            curr = curr->next;
+        }
+        if (count == 0) {
+            break;
+        }
     }
 }
 
@@ -104,7 +95,7 @@ int main(int argc, char *argv[]) {
         }
 
         struct pizza *head = NULL;
-        char pName[255];
+        char pName[65];
         float d;
         float cost;
 
@@ -125,14 +116,11 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        printf("UNSORTED: \n");
-        printList(head);
-        //head = sort(head);
-        printf("SORTED: \n");
+        fclose(file);
+        sort(head);
         printList(head);
         freePizzas(head);
-        fclose(file);
-
+        
         return EXIT_SUCCESS;
     }
 }
